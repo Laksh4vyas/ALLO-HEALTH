@@ -4,7 +4,7 @@
 > Built with **Next.js 15**, **TypeScript**, **Prisma**, **PostgreSQL**, **TailwindCSS**, and **React Query**.
 
 ---
-
+## Live - https://allo-health-laksh.vercel.app/
 ## 🚀 Quick Start
 
 ### Prerequisites
