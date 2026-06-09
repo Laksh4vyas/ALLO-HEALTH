@@ -40,14 +40,14 @@ export async function createReservation(
     const inventories = await tx.$queryRaw<
       {
         id: string;
-        total_quantity: number;
-        reserved_quantity: number;
+        totalQuantity: number;
+        reservedQuantity: number;
       }[]
     >`
-      SELECT id, total_quantity, reserved_quantity
+      SELECT id, "totalQuantity", "reservedQuantity"
       FROM "Inventory"
-      WHERE product_id = ${input.productId}
-        AND warehouse_id = ${input.warehouseId}
+      WHERE "productId" = ${input.productId}
+        AND "warehouseId" = ${input.warehouseId}
       FOR UPDATE
     `;
 
@@ -56,7 +56,7 @@ export async function createReservation(
     }
 
     const inventory = inventories[0];
-    const available = inventory.total_quantity - inventory.reserved_quantity;
+    const available = inventory.totalQuantity - inventory.reservedQuantity;
 
     if (available < input.quantity) {
       throw new InsufficientStockError(
@@ -67,8 +67,8 @@ export async function createReservation(
     // Increment reserved quantity
     await tx.$executeRaw`
       UPDATE "Inventory"
-      SET reserved_quantity = reserved_quantity + ${input.quantity},
-          updated_at = NOW()
+      SET "reservedQuantity" = "reservedQuantity" + ${input.quantity},
+          "updatedAt" = NOW()
       WHERE id = ${inventory.id}
     `;
 
@@ -177,11 +177,11 @@ export async function confirmReservation(
     // Atomically decrement both totalQuantity and reservedQuantity (permanent deduction)
     await tx.$executeRaw`
       UPDATE "Inventory"
-      SET total_quantity = total_quantity - ${reservation.quantity},
-          reserved_quantity = reserved_quantity - ${reservation.quantity},
-          updated_at = NOW()
-      WHERE product_id = ${reservation.productId}
-        AND warehouse_id = ${reservation.warehouseId}
+      SET "totalQuantity" = "totalQuantity" - ${reservation.quantity},
+          "reservedQuantity" = "reservedQuantity" - ${reservation.quantity},
+          "updatedAt" = NOW()
+      WHERE "productId" = ${reservation.productId}
+        AND "warehouseId" = ${reservation.warehouseId}
     `;
 
     const updated = await tx.reservation.update({
@@ -229,10 +229,10 @@ export async function releaseReservation(id: string) {
     // Return stock to available pool
     await tx.$executeRaw`
       UPDATE "Inventory"
-      SET reserved_quantity = reserved_quantity - ${reservation.quantity},
-          updated_at = NOW()
-      WHERE product_id = ${reservation.productId}
-        AND warehouse_id = ${reservation.warehouseId}
+      SET "reservedQuantity" = "reservedQuantity" - ${reservation.quantity},
+          "updatedAt" = NOW()
+      WHERE "productId" = ${reservation.productId}
+        AND "warehouseId" = ${reservation.warehouseId}
     `;
 
     return tx.reservation.update({
@@ -265,10 +265,10 @@ export async function releaseExpiredReservations() {
       await prisma.$transaction(async (tx: TransactionClient) => {
         await tx.$executeRaw`
           UPDATE "Inventory"
-          SET reserved_quantity = reserved_quantity - ${reservation.quantity},
-              updated_at = NOW()
-          WHERE product_id = ${reservation.productId}
-            AND warehouse_id = ${reservation.warehouseId}
+          SET "reservedQuantity" = "reservedQuantity" - ${reservation.quantity},
+              "updatedAt" = NOW()
+          WHERE "productId" = ${reservation.productId}
+            AND "warehouseId" = ${reservation.warehouseId}
         `;
 
         await tx.reservation.update({

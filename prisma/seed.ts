@@ -60,7 +60,7 @@ async function main() {
         description:
           "Titanium design with A17 Pro chip, 48MP camera system, and Action Button for ultimate control.",
         imageUrl:
-          "https://images.unsplash.com/photo-1695048133142-1a20484bce71?w=800&q=80",
+          "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800&q=80",
       },
     }),
     prisma.product.create({
